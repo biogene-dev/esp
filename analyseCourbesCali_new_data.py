@@ -4,8 +4,6 @@ Created on Sat May 11 15:35:53 2019
 
 @author: ash
 """
-
-typeTest = 1 
 #import Main
 tpsEntreMesures = 2; 
 # nb d'oscillations minimum à imposer lors du calibrage
@@ -29,7 +27,7 @@ from tkinter import *
 # si calibrage raquette, demande autres informations
 
 print ("=========calibration=======")
-typeTest =1
+typeTest =0
 if typeTest==2 :
     print('*******************************************************')
     mRaquette=input('Masse de la raquette ? (en g) ==> ') 
@@ -43,7 +41,7 @@ a = np.array([])
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "calib.txt"
+file_to_open = p.absolute() / "record"
 
 print ("opening file")
 print(file_to_open)
@@ -52,41 +50,29 @@ f= open(file_to_open,"r")
 val = 0.0 
 print ("Formatage des datas")
 rating = 0
-#fwrite = open("ecrit", "w+")
-#tps = 0.000004
-#for line in f:
-#    try :
-#        val = float(line)
-#    except :
-#        print("bad")
-#        print (line)
-#    else :
-#        fwrite.writelines("%.6f" % tps + " " + str(val) + "\n" )
-#        tps += 0.000004
-#fwrite.close()
-#f.seek(0)   
-#f.read(1000)
-    
 for line in f:
     rating +=1
-    try :
-        val = float(line)
-    except :
-        print("bad")
-        print (line)
-    else :
-        #print ("good" , val)
-        # ----------------------------
-        # conversion binaire, valeur reelle
-
-        # fonction de transformation bit -> degre
-        if rating == 20: 
+    if line :
+        try :
+#            print (line)
+            to_test =line.split(',')
+            val = float(to_test[2])
+#            print (val)
+        except :
+            pass
+#            print("bad")
+#            print (line)
+        else :
+#            print ("good" , val)
+            # ----------------------------
+            # conversion binaire, valeur reelle
+    
+            # fonction de transformation bit -> degre
             transAng=(val*360/((2^16)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
             a =np.append(a, val)
-            #print (len(a))
-            rating  = 0
+#            print (len(a))
         
-print (len(a))
+print ("len de rec =" , len(a))
 print (a)
 
 ## ========================================================================
@@ -244,14 +230,10 @@ mLI=zeros(nbTests,2);       # initialisation donnée de masse, longueur, et iner
 rendement=zeros(nbTests,1); # initialisation rendement
 """
 indAEnlever = np.array([])
-#mLI = np.zeros((nbTests,2),)
-mLI = []
-#mLI = [[0.69195, 0.5009603149188545], [0.69195, 0.5008565041789916]]
-#rendement = np.zeros((nbTests,1))
-rendement = []
+mLI = np.zeros((nbTests,2),)
+rendement = np.zeros((nbTests,1))
 #ang_test = [None] 
 #t_test = [None]
-#nbTests = 0
 for i in range (nbTests):
     print ("pour inbrdetest donne indice zero et fin = ", i, ind0[i] , indTestFin [i] )
     t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i])) )
@@ -335,8 +317,8 @@ for i in range (nbTests):
         pic_n = np.append ( pic_n ,ang_test[i])
     print (" et les pics = ", pic_n)
     #indexes = detect_peaks(ang, mph=0.3 , mpd=1000)
-    rendement.append( math.pow( ((1-math.cos(pic[-1])))/(1-math.cos(pic[1])) , 1/(4*(nbOscillations - 1)) ))
-    print ( " le rendemlent calculé = ", rendement)
+    rendement[n] = math.pow( ((1-math.cos(pic[-1])))/(1-math.cos(pic[1])) , 1/(4*(nbOscillations - 1)) )
+    print ( " le rendemlent calculé = ", rendement[n])
     diffT = np.array([])
     diffT =  t_test[ind_n[2:]] -t_test[ind_n[1:-1]]
     print ("les peiodes sont = ", diffT)
@@ -386,42 +368,17 @@ for i in range (nbTests):
     posCdGRaquette = 25 
     mLinit=mRaquette*1e-3*(posCdGRaquette*1e-3+posRaquette)+mBras*posCdGBras; # mL est imposé
     mL = mLinit 
-    mL =0.6 
+    mL =0.238
     Iinit = 1.05
-#    print ("mLinit = " , mL)
-    kvlinit = 0.035
-    
-#    Pendule Balle
-
-#    Masse tige pendule (kg)
-    mTigePendule = 1.212; # PB et GR le 17/11/17
-#     Distance du CG de la tige sur le pendule   avec l'axe de rotation
-#  (metre)
-    posCdGTigePendule = 0.385; # PB et GR le 17/11/17
-    
-#    Masse de la boule qui représente la balle (kg)
-    mBoule = 0.290; # changé par PB et GR le 17/11/17
-
-#   mBoule = 0.346; % Ancien data (Capsule)
-#   Distance du CG de la boule sur le pendule Balle avec l'axe de rotation
-#   (metre)
-    posCdGBoule = 0.777; # PB et GR le 17/11/17
-    mLinit=mTigePendule*posCdGTigePendule+mBoule*posCdGBoule; # mL est imposé
-    mL=mLinit;
-    kv1init=0.01;
-    Iinit=0.55; 
     print ("mLinit = " , mL)
-
-    
-    #kvlinit = 0.6
-#    Iinit = math.sqrt (T) * mLinit * 9.81 / (4*math.sqrt ( math.pi) )
+    kvlinit = 0.035
+    #☺kvlinit = 0.6
+    Iinit = math.sqrt (T) * mLinit * 9.81 / (4*math.sqrt ( math.pi) )
 #    cmax = [ ml , 0.04 , 0.3 , 0.01 , 4]
 #    cmin = [ ml , 0.03 , 0.2 , -0.01 , 2 ]
-#    Iinit = 0.238
+    #Iinit = 0.238
     pos0init=0;
     vit0init = (ang_test[10] - ang_test[1]) / (t_test[10] - t_test[1])
-    print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10],t_test[1])
-    vit0init = 1.93
     print ("vit0)init  = ", vit0init)   
     def EDCoulomb(t,x,param):
         g = 9.81
@@ -435,26 +392,14 @@ for i in range (nbTests):
 
         return (dtheta , ddtheta)
     def Myfun2Minimize(c,donnees):
-#        param = (mL , kvlinit , Iinit)
-        print ("donnes =" , c)
-        param = (c[0], c[1] , c[2])
+        param = (mL , kvlinit , Iinit)
         t0 = 0.0 
         tmax = 12.0
         from scipy import integrate
-        #from scipy.integrate import odeint
-        solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (c[3], c[4])  , max_step = 0.0008,dense_output=True, rtol = 1e-5,atol = 1e-8)    
+        solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (pos0init, vit0init)  , dense_output = True, max_step = 0.0008, rtol = 1e-8,atol = 1e-10)    
         #print( solED)
-#        fxi  = solED.y[0][:len (ang_test)]
-#        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
-        from scipy.integrate import odeint
-#        XsolED = odeint(solED, 0, len (donnees[1]))
-        
-        fxi  = solED.y[0][:len (donnees[1])]
-#        res  = np.sum(fxi-donnees[1])*math.ceil(math.log2(abs(2))) 
-        res = 0
-        for i in range(len (fxi)):
-            res += math.pow((fxi[i]-donnees[1][i]) , 2)
-        print ("res =¨" , res)
+        fxi  = solED.y[0][:len (ang_test)]
+        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
         return res
     """
         # utilisation de fminsearchbnd
@@ -463,21 +408,12 @@ for i in range (nbTests):
     [xsol,fval]=fminsearchbnd(@(x)Myfun2Minimize(x,[t_test,ang_test]),[mLinit,kv1init,Iinit,pos0init,vit0init],cmin,cmax,options);
     # si je ne veux pas lancer l'optimisation mais utiliser des valeurs approchées
     """
-    from scipy.optimize import Bounds
-#    bounds = Bounds([mL, 0.03,    0.2,  -0.01,  2], [mL, 0.04,    0.3,   0.01,  4])
-    bounds = Bounds([mL, 0,    0.5,  -0.01,  1], [mL, 0.02, 0.6,   0.01,  3.5])
 
     from scipy import optimize
     
 #    (xsol , fval) = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
-#    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] )    
-#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , bounds=bounds, tol = 1e-2  )
-#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
-    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'f(tol': 1e-2}  )
-    
-    
+    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
     print ("totut = ", xsol) 
-    print ("totut de x = ", xsol.x) 
 
 
     """
@@ -496,18 +432,16 @@ for i in range (nbTests):
     mLfmincon=xsol(1);
     c=xsol ; 
     """
-    Ifmincon=xsol.x[2]
+    Ifmincon=xsol[2]
     print ("Ifmincom =" , Ifmincon)
-    mLfmincon=xsol.x[0]
-    c=xsol.x
+    mLfmincon=xsol[0]
+    c=xsol 
     paramR=(c[0:3])
-#    paramR=([0.6919, 0.0199 , 0.5007])
     pos0R=c[3]
     vit0R=c[4]
-    vit0R=2.16
     print ("paramR = " , paramR)
     from scipy import integrate
-    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, 12) , (pos0R, vit0R)  , dense_output = True, max_step = 0.0008,rtol = 1e-5,atol = 1e-8)    
+    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, 12) , (pos0R, vit0R)  , dense_output = True, max_step = 0.0008, rtol = 1e-8,atol = 1e-10)    
 
     """
     # ---- pour tracer
@@ -520,75 +454,10 @@ for i in range (nbTests):
     yRegressMC = (XR(:,1)) ; # degres
     hold on
     plot(t_test,yRegressMC,'.c');      # trace la regression en cyan
-   """
-#    mLI=[mLfmincon,Ifmincon]; # garde le couple (mL, I) du fmincon
-    mLI.append([mLfmincon,Ifmincon]) # garde le couple (mL, I) du fmincon
 
-## ========================================================================
-#  post-processing, enregistrement
-# =========================================================================
-# enregistre ces valeurs en dur dans le workspace
-print ("rendement = " , rendement)
-print ("mLI =" , mLI)
-print ("file tot write")
-
-import os.path
-print ("typeTest=",typeTest)
-if typeTest == 1 : #balle
-    print ("type=test =",typeTest)
-    if os.path.isfile('mLI_balle.py'):# recupere précédentes valeurs
-        from mLI_balle import mLI_b
-        print('*******************************************************')
-        print('les valeurs caractéristiques du dernier calibrage balle étaient ', mLI_b)
-    print('*******************************************************')
-    print('les nouvelles valeurs du calibrage balle sont:' , mLI)
-    print('*******************************************************')   
-    if os.path.isfile('rendement_balle.py'):
-        from rendement_balle import rendement_b
-        print('*******************************************************')
-        print('les valeurs caractéristiques du dernier rendement balle étaient ', rendement_b)
-    print('*******************************************************')
-    print('les nouvelles valeurs du rendement balle sont:' , rendement)
-    print('*******************************************************')  
+    mLI(n,:)=[mLfmincon,Ifmincon]; # garde le couple (mL, I) du fmincon
     
-    testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
-    testSauve=1;
-    if testSauve == 1 :
-        file_to_write = open("mLI_balle.py","w+")
-        file_to_write.write("mLI_b = " + repr(mLI) + "\n")
-        file_to_write.flush()
-        file_to_write.close()
-        file_to_write = open("rendement_balle.py","w+")
-        file_to_write.write("rendement_b = " + repr(rendement) + "\n")
-        file_to_write.close()
-if typeTest == 2 : #raquette
-    print ("type=test =",typeTest)
-    if os.path.isfile('mLI_raquette.py'):# recupere précédentes valeurs
-        from mLI_raquette import mLI_r
-        print('*******************************************************')
-        print('les valeurs caractéristiques du dernier calibrage raquette étaient ', mLI_r)
-    print('*******************************************************')
-    print('les nouvelles valeurs du calibrage requette sont:' , mLI)
-    print('*******************************************************')   
-    if os.path.isfile('rendement_raquette.py'):
-        from rendement_raquette import rendement_r
-        print('*******************************************************')
-        print('les valeurs caractéristiques du dernier rendement raquette étaient ', rendement_r)
-    print('*******************************************************')
-    print('les nouvelles valeurs du rendement raquette sont:' , rendement)
-    print('*******************************************************')  
     
-    testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
-    testSauve=1;
-    if testSauve == 1 :
-        file_to_write = open("mLI_raquette.py","w+")
-        file_to_write.write("mLI_r = " + repr(mLI) + "\n")
-        file_to_write.flush()
-        file_to_write.close()
-        file_to_write = open("rendement_raquette.py","w+")
-        file_to_write.write("rendement_r = " + repr(rendement) + "\n")
-        file_to_write.close()
-"""   
 end
 
 # enleve les lignes pour lesquelles on a dit que la courbe n'était pas OK
@@ -596,7 +465,91 @@ mLI(indAEnlever,:)=[];
 rendement(indAEnlever,:)=[];
 
 
+## ========================================================================
+#  post-processing, enregistrement
+# =========================================================================
+# enregistre ces valeurs en dur dans le workspace
+switch typeTest
 
+        case 1 # balle
+            
+        mLI_balle=mLI;
+        if exist('mLI_balle.mat','file')  # recupere précédentes valeurs
+            mLI_avant=load('mLI_balle.mat');
+            print('*******************************************************')
+            print('les valeurs caractéristiques du dernier calibrage balle étaient ')
+            [mLI_avant.mLI_balle]
+        end
+            print('*******************************************************')
+        print('les nouvelles valeurs du calibrage balle sont:')
+        [mLI_balle]
+            print('*******************************************************')
+
+
+        rendement_balle=rendement;
+        if exist('rendement_balle.mat','file')  # recupere précédentes valeurs
+            rendement_avant=load('rendement_balle.mat');
+            print('*******************************************************')
+            print('les valeurs de rendement du dernier calibrage balle étaient ')
+            [rendement_avant.rendement_balle]
+        end
+            print('*******************************************************')
+        print('les nouvelles valeurs du rendement calibrage balle sont:')
+        rendement_balle
+            print('*******************************************************')
+        # testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
+        testSauve=1;
+        
+        switch testSauve
+            case 1          
+                save('rendement_balle','rendement_balle');
+                save('mLI_balle','mLI_balle');
+            otherwise
+        end
+        
+
+    case 2 # raquette
+        
+        mLI_raquette=mLI;
+        
+        if exist('mLI_raquette.mat','file')  # recupere précédentes valeurs
+            mLI_avant=load('mLI_raquette.mat');
+            print('*******************************************************')
+            print('les valeurs caractéristiques du dernier calibrage raquette étaient ')
+            [mLI_avant.mLI_raquette]
+        end
+        print('*******************************************************')
+        print('les nouvelles valeurs du calibrage raquette sont:')
+        [mLI_raquette]
+         print('*******************************************************')
+
+            
+        rendement_raquette=rendement;
+        if exist('rendement_raquette.mat','file')  # recupere precedentes valeurs
+            rendement_avant=load('rendement_raquette.mat');
+            print('*******************************************************')
+            print('les rendements du dernier calibrage raquette étaient ')
+            print('i''eme ligne pour test calibrage numero i');
+            [rendement_avant.rendement_raquette]
+        end
+        print('*******************************************************')
+        print('les nouvelles valeurs de rendement du calibrage raquette sont:')
+        print('i''eme ligne pour test calibrage numero i');
+        [rendement_raquette]
+        print('*******************************************************')
+        # testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
+        testSauve=1;
+        
+        switch testSauve
+            case 1
+                save('rendement_raquette','rendement_raquette');
+                save('mLI_raquette','mLI_raquette');
+                # enregistre aussi les données de raquette (masse + posCdG)
+                save('donneesGeomRaquette','mRaquette','posCdGRaquette');
+            otherwise
+        end
+        
+end
 
 
 # le calibrage de la balle et de la raquette donnent en sortie le couple
@@ -624,11 +577,11 @@ cd(current.script) # je restaure mon ancien current directory
 """
 print ("size = ", a.size)
 #time = np.arange(0.0, 64058, 1)
-time = np.arange(0.0, 64058, 1)
+time = np.arange(0.0, len(a), 1)
 
 plt.figure(1)
 plt.figure( figsize=(8, 6))
-#plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
+plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 
 plt.subplot(611)
 plt.ylabel('teta')
