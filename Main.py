@@ -186,10 +186,10 @@ print (typeTest)
 if typeTest == "1" :
     print ("===TEST CALIBRAGE BALLE===")
         
-    mesures = Acquisition(100,typeTest,current);   # 100 secondes de test par default pour calibrage balle
+#    mesures = Acquisition(100,typeTest,current);   # 100 secondes de test par default pour calibrage balle
     # fait l'acquisition et save data dans calBalle-date-.csv
     
-    analyseCourbesCali   # fait l'analyse de cette courbe
+#    analyseCourbesCali   # fait l'analyse de cette courbe
 
     # en output il sort:
 #         mLI_balle.mat, rendement_balle.mat
@@ -206,10 +206,10 @@ if typeTest == 2 :  # raquette
 
         nomRaquette=input('nom de la raquette ? ==> ','s'); # demande nom de la raquette
         save('nomRaquette','nomRaquette'); # enregistre en dur sous fichier .mat
-        mesures = Acquisition(80,typeTest,current); # 80sec de temps d'acquisition
+#        mesures = Acquisition(80,typeTest,current); # 80sec de temps d'acquisition
         # fait l'acquisition et save data dans calibBalle-nomRaquette-date.csv
 
-        analyseCourbesCali   # fait l'analyse de cette courbe
+#        analyseCourbesCali   # fait l'analyse de cette courbe
         
         # en output il sort:
 #         mLI_raquette.mat, rendement_raquette.mat, donneesGeomRaquette.mat

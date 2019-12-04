@@ -17,17 +17,29 @@ import numpy as np
 
 from tkinter import filedialog
 from tkinter import *
+import tkinter
 
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
+# Implement the default Matplotlib key bindings.
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.figure import Figure
+
+import numpy as np
 
 # script utilisé lors de calibrage (raquette ou balle) pour trouver les propriétés
 # de masse, inertie, et rendement des 2 axes
 # les données sont dans la variable 'mesures' qui sort de la fonction 'Acquisition'
-
+def plot_simple (to_plot):
+    plt.figure(1)
+    plt.figure( figsize=(8, 6))
+    plt.plot(to_plot,'k' )
+    plt.show()
 
 # si calibrage raquette, demande autres informations
 
 print ("=========calibration=======")
-typeTest =0
+typeTest =1
 if typeTest==2 :
     print('*******************************************************')
     mRaquette=input('Masse de la raquette ? (en g) ==> ') 
@@ -41,7 +53,7 @@ a = np.array([])
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "record"
+file_to_open = p.absolute() / "calib_raquette.txt"
 
 print ("opening file")
 print(file_to_open)
@@ -56,8 +68,8 @@ for line in f:
         try :
 #            print (line)
             to_test =line.split(',')
-            val = float(to_test[2])
-#            print (val)
+            val = float(to_test[1])
+#            print ("val =",val)
         except :
             pass
 #            print("bad")
@@ -68,8 +80,9 @@ for line in f:
             # conversion binaire, valeur reelle
     
             # fonction de transformation bit -> degre
-            transAng=(val*360/((2^16)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-            a =np.append(a, val)
+            transAng=(val*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
+#            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
+            a =np.append(a, transAng)
 #            print (len(a))
         
 print ("len de rec =" , len(a))
@@ -93,9 +106,9 @@ ang = np.subtract(ang, ang0)
 # cherche les pics de la courbe d'oscillations libres amorties
 #ind=peakfinder(ang,0.3);
 #ind=[1;ind]; # rajoute l'indice 0 en début
-
+plot_simple(ang)
 from detect_peaks import detect_peaks
-indexes = detect_peaks(ang, mph=0.3 , mpd=1000)
+indexes = detect_peaks(ang, mph=0.25 , mpd=1000)
 
 """ ancienne solution
 import peakutils
@@ -117,6 +130,13 @@ for i in indexes:
 indSub = indexes[1:]-indexes[0:-1]
 
 print ("indSub (difrence des indices = )", indSub)
+
+time = np.arange(0.0, len(a), 1)
+
+plt.figure(1)
+plt.figure( figsize=(8, 6))
+
+plt.plot(time , ang,'k', indexes, pic , 'ro',)
 
 # pas de pics si le debut entre 2 max consecutifs est grand
 #periode=indSub*(t(2,1)-t(1,1)); # diff des indices *  tps increment => periode en us
@@ -167,9 +187,9 @@ ind0=np.array([])
 val_ind0=np.array([])
 for i in range (nbTests):
     val = np.array([])
-    #print ('pour le tesst n=', i, indTest1erpic[i])
+    print ('pour le tesst n=', i, indTest1erpic[i])
     for indi in(indMes0):
-        #print ('indi = ' , indi)
+#        print ('indi = ' , indi)
         if indi >  indTest1erpic[i]:
             val = np.append(val, indi)
             #print("find indi sup a indtest1piec", indTest1erpic[i])
@@ -236,10 +256,16 @@ rendement = np.zeros((nbTests,1))
 #t_test = [None]
 for i in range (nbTests):
     print ("pour inbrdetest donne indice zero et fin = ", i, ind0[i] , indTestFin [i] )
-    t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i])) )
-    temp = ((int(indTestFin[i]) - int(ind0[i])) * 40 * 20 ) / 1000000
-    temp_test = np.arange(0,temp , step = 40*20 / 1000000 ) 
+#    t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i]),0.001) )
+    t_test = np.arange(int(ind0[i]), int(indTestFin[i]),0.001  )
+
+#    t_test = 80
+#    temp = ((int(indTestFin[i]) - int(ind0[i])) * 40 * 20 ) / 1000000
+#    temp_test = np.arange(0,temp , step = 40*20 / 1000000 ) 
+    temp = ((int(indTestFin[i]) - int(ind0[i])) ) / 1000
+    temp_test = np.arange(0,temp , step = 1 / 1000 ) 
     ang_test =   - ang [ int (ind0[i]) : int (indTestFin [i]) ]  
+#    ang_test =   ang [ int (ind0[i]) : int (indTestFin [i]) ]  
     print ("fin de la zone test")
     print ("len de time test = ", len(t_test) , t_test)
     print (" len de and_test =" , len (ang_test))
@@ -361,25 +387,80 @@ for i in range (nbTests):
             cmin=[mL; 0.03;    0.2;  -0.01;  2];        # bornes inférieures
     end
     """
-    posRaquette = 0.269; # raquettes de longueur 685mm
-    mBras = 4.892; # PB et GR le 06/02/18
-    posCdGBras = 0.179; # PB et GR le 06/02/18
-    mRaquette = 500 
-    posCdGRaquette = 25 
-    mLinit=mRaquette*1e-3*(posCdGRaquette*1e-3+posRaquette)+mBras*posCdGBras; # mL est imposé
-    mL = mLinit 
-    mL =0.238
-    Iinit = 1.05
-    print ("mLinit = " , mL)
-    kvlinit = 0.035
-    #☺kvlinit = 0.6
-    Iinit = math.sqrt (T) * mLinit * 9.81 / (4*math.sqrt ( math.pi) )
+    if typeTest == 1 :
+        mLinit=mTigePendule*(posCdGTigePendule+mBoule*posCdGBoule); # mL est imposé
+        mL = mLinit 
+        kvlinit = 0.01
+        Iinit = 0.55
+        cmin = [mL, 0,    0.4,  -0.01,  1]
+        cmax = [mL, 0.02, 0.7  ,   0.01,  5]
+    if typeTest == 2 :
+        mLinit=float(mRaquette)*1e-3*(float(posCdGRaquette)*1e-3+float(posRaquette))+float(mBras)*float(posCdGBras); # mL est imposé
+        mL = mLinit 
+        mL = 0.74
+        kvlinit = 0.035
+        Iinit=float(math.pow(T,2))*float(mLinit)*9.81/(4*math.pow(math.pi,2));      # T période moyenne          
+        Iinit=0.30;      # T période moyenne          
+        cmin = [mL, 0.03, 0.2, -0.01,  2]
+        cmax = [mL, 0.04, 0.3,  0.01,  5]
+#    posRaquette = 0.269; # raquettes de longueur 685mm
+#    mBras = 4.892; # PB et GR le 06/02/18
+#    posCdGBras = 0.179; # PB et GR le 06/02/18
+#    mRaquette = 500 
+#    posCdGRaquette = 25 
+#    mLinit=mRaquette*1e-3*(posCdGRaquette*1e-3+posRaquette)+mBras*posCdGBras; # mL est imposé
+#    mL = mLinit 
+#    mL =0.238
+#    Iinit = 1.05
+#    print ("mLinit = " , mL)
+#    kvlinit = 0.035
+#    #☺kvlinit = 0.6
+#    Iinit = math.sqrt (T) * mLinit * 9.81 / (4*math.sqrt ( math.pi) )
 #    cmax = [ ml , 0.04 , 0.3 , 0.01 , 4]
 #    cmin = [ ml , 0.03 , 0.2 , -0.01 , 2 ]
     #Iinit = 0.238
     pos0init=0;
     vit0init = (ang_test[10] - ang_test[1]) / (t_test[10] - t_test[1])
-    print ("vit0)init  = ", vit0init)   
+#    vit0init = 0.7
+
+    print ("vit0)init  = ", vit0init)  
+#--------------------------------
+#    def EDCoulomb(t,x,param):
+#        g = 9.81
+#        mL = param[0]
+#        kv1 = param[1]
+#        I = param[2]
+#        
+#        theta = x[0] # angle
+#        dtheta = x[1] # vitesse
+#        ddtheta=-mL * g / I * math.sin(theta) - kv1 / I * dtheta # acceleration
+#
+#        return (dtheta , ddtheta)
+#    def Myfun2Minimize(c,donnees):
+#        param = (mL , kvlinit , Iinit)
+#        t0 = 0.0 
+#        tmax = 12.0
+#        from scipy import integrate
+#        solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (pos0init, vit0init)  , dense_output = True, max_step = 0.0008, rtol = 1e-8,atol = 1e-10)    
+##        print( solED)
+#        fxi  = solED.y[0][:len (ang_test)]
+#        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
+#        print ("res =¨" , res)
+#        return res
+#    """
+#        # utilisation de fminsearchbnd
+#    options=optimset('fminsearch');
+#    options.TolFun=1e-2; options.TolX=1e-2; options.TolCon=1e-2; # options de convergence
+#    [xsol,fval]=fminsearchbnd(@(x)Myfun2Minimize(x,[t_test,ang_test]),[mLinit,kv1init,Iinit,pos0init,vit0init],cmin,cmax,options);
+#    # si je ne veux pas lancer l'optimisation mais utiliser des valeurs approchées
+#    """
+#
+#    from scipy import optimize
+#    
+##    (xsol , fval) = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
+#    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
+#    print ("totut = ", xsol) 
+#------------------------------------------
     def EDCoulomb(t,x,param):
         g = 9.81
         mL = param[0]
@@ -392,14 +473,26 @@ for i in range (nbTests):
 
         return (dtheta , ddtheta)
     def Myfun2Minimize(c,donnees):
-        param = (mL , kvlinit , Iinit)
+#        param = (mL , kvlinit , Iinit)
+#        print ("donnes =" , c)
+        param = (c[0], c[1] , c[2])
         t0 = 0.0 
         tmax = 12.0
         from scipy import integrate
-        solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (pos0init, vit0init)  , dense_output = True, max_step = 0.0008, rtol = 1e-8,atol = 1e-10)    
-        #print( solED)
-        fxi  = solED.y[0][:len (ang_test)]
-        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
+        #from scipy.integrate import odeint
+        solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (c[3], c[4])  , max_step = 0.001,dense_output=True, rtol = 1e-5,atol = 1e-8)    
+        print( solED)
+#        fxi  = solED.y[0][:len (ang_test)]
+#        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
+        from scipy.integrate import odeint
+#        XsolED = odeint(solED, 0, len (donnees[1]))
+        
+        fxi  = solED.y[0][:len (donnees[1])]
+#        res  = np.sum(fxi-donnees[1])*math.ceil(math.log2(abs(2))) 
+        res = 0
+        for i in range(len (fxi)):
+            res += math.pow((fxi[i]-donnees[1][i]) , 2)
+        print ("res =¨" , res)
         return res
     """
         # utilisation de fminsearchbnd
@@ -408,14 +501,25 @@ for i in range (nbTests):
     [xsol,fval]=fminsearchbnd(@(x)Myfun2Minimize(x,[t_test,ang_test]),[mLinit,kv1init,Iinit,pos0init,vit0init],cmin,cmax,options);
     # si je ne veux pas lancer l'optimisation mais utiliser des valeurs approchées
     """
+    from scipy.optimize import Bounds
+#    bounds = Bounds([mL, 0.03,    0.2,  -0.01,  2], [mL, 0.04,    0.3,   0.01,  4])
+    bounds = Bounds(cmin, cmax)
 
     from scipy import optimize
     
 #    (xsol , fval) = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
-    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
+#    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] )    
+#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , bounds=bounds, tol = 1e-2  )
+#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
+    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'ftol': 1e-2}  )
+    
+    
     print ("totut = ", xsol) 
+    print ("totut de x = ", xsol.x) 
 
-
+    
+    
+    
     """
     pos0init=0;
     vit0init=(ang_test(10)-ang_test(1))/(t_test(10)-t_test(1)) ; # trouvé en utilisant le graphe
@@ -432,16 +536,57 @@ for i in range (nbTests):
     mLfmincon=xsol(1);
     c=xsol ; 
     """
-    Ifmincon=xsol[2]
+#    Ifmincon=xsol[2]
+#    print ("Ifmincom =" , Ifmincon)
+#    mLfmincon=xsol[0]
+#    c=xsol 
+#    paramR=(c[0:3])
+#    pos0R=c[3]
+#    vit0R=c[4]
+    Ifmincon=xsol.x[2]
     print ("Ifmincom =" , Ifmincon)
-    mLfmincon=xsol[0]
-    c=xsol 
+    mLfmincon=xsol.x[0]
+    c=xsol.x
     paramR=(c[0:3])
     pos0R=c[3]
     vit0R=c[4]
+    
     print ("paramR = " , paramR)
     from scipy import integrate
-    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, 12) , (pos0R, vit0R)  , dense_output = True, max_step = 0.0008, rtol = 1e-8,atol = 1e-10)    
+    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, temp) , (pos0R, vit0R)  , dense_output = True, max_step = 0.001, rtol = 1e-8,atol = 1e-10)    
+
+    time = np.arange(0.0, len(a), 1)
+    
+    plt.figure(1)
+    plt.figure( figsize=(8, 16))
+    #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
+    
+    plt.subplot(611)
+    plt.ylabel('teta')
+    plt.plot(time ,  a,'k' )
+    
+    plt.subplot(612)
+    plt.ylabel('teta')
+    plt.plot(time , ang,'k', indexes, pic , 'ro', ind0 , val_ind0 ,'bo' , indTestFin , valTestFin , 'go' )
+    
+    plt.subplot(613)
+    plt.ylabel('teta')
+    #plt.plot( temp_test ,  ang_test ,'k', ind_n, pic_n ,'ro' )
+    plt.plot( temp_test ,  ang_test ,'k' )
+    
+    plt.subplot(614)
+    plt.ylabel('teta')
+    plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
+    
+    plt.subplot(615)
+    plt.ylabel('accel')
+    plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
+    
+    plt.subplot(616)
+    plt.ylabel('accel')
+    plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
+    
+    plt.show()
 
     """
     # ---- pour tracer
@@ -580,8 +725,8 @@ print ("size = ", a.size)
 time = np.arange(0.0, len(a), 1)
 
 plt.figure(1)
-plt.figure( figsize=(8, 6))
-plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
+plt.figure( figsize=(8, 16))
+#plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 
 plt.subplot(611)
 plt.ylabel('teta')
@@ -609,3 +754,5 @@ plt.ylabel('accel')
 plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
 
 plt.show()
+
+

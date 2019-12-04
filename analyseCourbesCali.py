@@ -19,7 +19,7 @@ import numpy as np
 
 from tkinter import filedialog
 from tkinter import *
-
+from Main import *
 
 # script utilisé lors de calibrage (raquette ou balle) pour trouver les propriétés
 # de masse, inertie, et rendement des 2 axes
@@ -43,8 +43,11 @@ a = np.array([])
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "calib.txt"
-
+if typeTest == 1 :
+    file_to_open = p.absolute() / "calib.txt"
+if typeTest==2 :
+    file_to_open = p.absolute() / "calib.txt"
+    
 print ("opening file")
 print(file_to_open)
 f= open(file_to_open,"r")
@@ -208,7 +211,7 @@ print ("ind0 ==" , ind0)
 indTestFin = np.array([]) 
 valTestFin = np.array([])
 for n in range (nbTests):
-    print ("for nb de tzest = ", nbTests)
+    print ("for :", n ," , sur nb de tzest = ", nbTests)
     for i , ind in enumerate (indexes):
         if ind == indTest1erpic[n] : 
             print ("indice et indtest1pic ", ind , indTest1erpic[n])
@@ -254,7 +257,11 @@ rendement = []
 #nbTests = 0
 for i in range (nbTests):
     print ("pour inbrdetest donne indice zero et fin = ", i, ind0[i] , indTestFin [i] )
-    t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i])) )
+    t_test = np.arange(int(ind0[i]), int(indTestFin[i]),0.0008  )
+#    t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i])) )
+
+#    temp = ((int(indTestFin[i]) - int(ind0[i])) * 40 * 20 ) / 1000000
+#    temp_test = np.arange(0,temp , step = 40*20 / 1000000 ) 
     temp = ((int(indTestFin[i]) - int(ind0[i])) * 40 * 20 ) / 1000000
     temp_test = np.arange(0,temp , step = 40*20 / 1000000 ) 
     ang_test =   - ang [ int (ind0[i]) : int (indTestFin [i]) ]  
@@ -379,38 +386,55 @@ for i in range (nbTests):
             cmin=[mL; 0.03;    0.2;  -0.01;  2];        # bornes inférieures
     end
     """
-    posRaquette = 0.269; # raquettes de longueur 685mm
-    mBras = 4.892; # PB et GR le 06/02/18
-    posCdGBras = 0.179; # PB et GR le 06/02/18
-    mRaquette = 500 
-    posCdGRaquette = 25 
-    mLinit=mRaquette*1e-3*(posCdGRaquette*1e-3+posRaquette)+mBras*posCdGBras; # mL est imposé
-    mL = mLinit 
-    mL =0.6 
-    Iinit = 1.05
+    if typeTest == 1 :
+        mLinit=mTigePendule*(posCdGTigePendule+mBoule*posCdGBoule); # mL est imposé
+        mL = mLinit 
+        kvlinit = 0.01
+        Iinit = 0.55
+        cmin = [mL, 0,    0.5,  -0.01,  1]
+        cmax = [mL, 0.02, 0.6,   0.01,  3.5]
+    if typeTest == 2 :
+        mLinit=float(mRaquette)*1e-3*(float(posCdGRaquette)*1e-3+float(posRaquette))+float(mBras)*float(posCdGBras); # mL est imposé
+        mL = mLinit 
+        mL = 0.74
+        kvlinit = 0.035
+        Iinit=float(math.pow(T,2))*float(mLinit)*9.81/(4*math.pow(math.pi,2));      # T période moyenne          
+        Iinit=0.30;      # T période moyenne          
+        cmin = [mL, 0.03, 0.2, -0.01,  2]
+        cmax = [mL, 0.04, 0.3,  0.01,  5]
+
+#        
+#    posRaquette = 0.269; # raquettes de longueur 685mm
+#    mBras = 4.892; # PB et GR le 06/02/18
+#    posCdGBras = 0.179; # PB et GR le 06/02/18
+#    mRaquette = 500 
+#    posCdGRaquette = 25 
+#    mL = mLinit 
+#    mL =0.6 
+#    Iinit = 1.05
+##    print ("mLinit = " , mL)
+#    kvlinit = 0.035
+#    
+##    Pendule Balle
+#
+##    Masse tige pendule (kg)
+#    mTigePendule = 1.212; # PB et GR le 17/11/17
+##     Distance du CG de la tige sur le pendule   avec l'axe de rotation
+##  (metre)
+#    posCdGTigePendule = 0.385; # PB et GR le 17/11/17
+#    
+##    Masse de la boule qui représente la balle (kg)
+#    mBoule = 0.290; # changé par PB et GR le 17/11/17
+#
+##   mBoule = 0.346; % Ancien data (Capsule)
+##   Distance du CG de la boule sur le pendule Balle avec l'axe de rotation
+##   (metre)
+#    posCdGBoule = 0.777; # PB et GR le 17/11/17
+#    mLinit=mTigePendule*posCdGTigePendule+mBoule*posCdGBoule; # mL est imposé
+#    mL=mLinit;
+#    kv1init=0.01;
+#    Iinit=0.55; 
 #    print ("mLinit = " , mL)
-    kvlinit = 0.035
-    
-#    Pendule Balle
-
-#    Masse tige pendule (kg)
-    mTigePendule = 1.212; # PB et GR le 17/11/17
-#     Distance du CG de la tige sur le pendule   avec l'axe de rotation
-#  (metre)
-    posCdGTigePendule = 0.385; # PB et GR le 17/11/17
-    
-#    Masse de la boule qui représente la balle (kg)
-    mBoule = 0.290; # changé par PB et GR le 17/11/17
-
-#   mBoule = 0.346; % Ancien data (Capsule)
-#   Distance du CG de la boule sur le pendule Balle avec l'axe de rotation
-#   (metre)
-    posCdGBoule = 0.777; # PB et GR le 17/11/17
-    mLinit=mTigePendule*posCdGTigePendule+mBoule*posCdGBoule; # mL est imposé
-    mL=mLinit;
-    kv1init=0.01;
-    Iinit=0.55; 
-    print ("mLinit = " , mL)
 
     
     #kvlinit = 0.6
@@ -421,8 +445,9 @@ for i in range (nbTests):
     pos0init=0;
     vit0init = (ang_test[10] - ang_test[1]) / (t_test[10] - t_test[1])
     print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10],t_test[1])
-    vit0init = 1.93
-    print ("vit0)init  = ", vit0init)   
+    print ("donc vit0=", vit0init)
+#    vit0init = 1.93
+    print ("alors que vit0)init  = ", vit0init)   
     def EDCoulomb(t,x,param):
         g = 9.81
         mL = param[0]
@@ -436,7 +461,7 @@ for i in range (nbTests):
         return (dtheta , ddtheta)
     def Myfun2Minimize(c,donnees):
 #        param = (mL , kvlinit , Iinit)
-        print ("donnes =" , c)
+#        print ("donnes =" , c)
         param = (c[0], c[1] , c[2])
         t0 = 0.0 
         tmax = 12.0
@@ -465,15 +490,15 @@ for i in range (nbTests):
     """
     from scipy.optimize import Bounds
 #    bounds = Bounds([mL, 0.03,    0.2,  -0.01,  2], [mL, 0.04,    0.3,   0.01,  4])
-    bounds = Bounds([mL, 0,    0.5,  -0.01,  1], [mL, 0.02, 0.6,   0.01,  3.5])
+    bounds = Bounds(cmin, cmax)
 
     from scipy import optimize
     
 #    (xsol , fval) = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
 #    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] )    
 #    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , bounds=bounds, tol = 1e-2  )
-#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
-    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'f(tol': 1e-2}  )
+    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
+#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'ftol': 1e-2}  )
     
     
     print ("totut = ", xsol) 
@@ -501,13 +526,14 @@ for i in range (nbTests):
     mLfmincon=xsol.x[0]
     c=xsol.x
     paramR=(c[0:3])
-#    paramR=([0.6919, 0.0199 , 0.5007])
     pos0R=c[3]
     vit0R=c[4]
-    vit0R=2.16
+#    paramR=([0.7463, 0.03070 , 0.2876])
+#    pos0R = -0.009641
+#    vit0R=3.99999
     print ("paramR = " , paramR)
     from scipy import integrate
-    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, 12) , (pos0R, vit0R)  , dense_output = True, max_step = 0.0008,rtol = 1e-5,atol = 1e-8)    
+    solEDR = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,paramR) , (0, 9) , (pos0R, vit0R)  , dense_output = True, max_step = 0.0008,rtol = 1e-5,atol = 1e-8)    
 
     """
     # ---- pour tracer
@@ -523,6 +549,28 @@ for i in range (nbTests):
    """
 #    mLI=[mLfmincon,Ifmincon]; # garde le couple (mL, I) du fmincon
     mLI.append([mLfmincon,Ifmincon]) # garde le couple (mL, I) du fmincon
+    time = np.arange(0.0, len(ang), 1)
+
+    plt.figure(1)
+    plt.figure( figsize=(8, 16))
+    #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
+    
+    plt.subplot(311)
+    plt.ylabel('teta')
+    plt.plot(time ,  a,'k' )
+    
+    plt.subplot(312)
+    plt.ylabel('teta')
+    plt.plot(time , ang,'k', indexes, pic , 'ro', ind0 , val_ind0 ,'bo' , indTestFin , valTestFin , 'go' )
+    
+    plt.subplot(313)
+    plt.ylabel('teta')
+    #plt.plot( temp_test ,  ang_test ,'k', ind_n, pic_n ,'ro' )
+    plt.plot( temp_test ,  ang_test ,'k' )
+    plt.plot( solEDR.t ,  solEDR.y[0] ,'b' )
+    
+    
+    plt.show()
 
 ## ========================================================================
 #  post-processing, enregistrement
@@ -624,35 +672,25 @@ cd(current.script) # je restaure mon ancien current directory
 """
 print ("size = ", a.size)
 #time = np.arange(0.0, 64058, 1)
-time = np.arange(0.0, 64058, 1)
+time = np.arange(0.0, len(ang), 1)
 
 plt.figure(1)
-plt.figure( figsize=(8, 6))
+plt.figure( figsize=(8, 16))
 #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 
-plt.subplot(611)
+plt.subplot(311)
 plt.ylabel('teta')
 plt.plot(time ,  a,'k' )
 
-plt.subplot(612)
+plt.subplot(312)
 plt.ylabel('teta')
 plt.plot(time , ang,'k', indexes, pic , 'ro', ind0 , val_ind0 ,'bo' , indTestFin , valTestFin , 'go' )
 
-plt.subplot(613)
+plt.subplot(313)
 plt.ylabel('teta')
 #plt.plot( temp_test ,  ang_test ,'k', ind_n, pic_n ,'ro' )
 plt.plot( temp_test ,  ang_test ,'k' )
+plt.plot( solEDR.t ,  solEDR.y[0] ,'b' )
 
-plt.subplot(614)
-plt.ylabel('teta')
-plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
-
-plt.subplot(615)
-plt.ylabel('accel')
-plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
-
-plt.subplot(616)
-plt.ylabel('accel')
-plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
 
 plt.show()

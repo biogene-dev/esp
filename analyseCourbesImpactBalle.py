@@ -165,6 +165,7 @@ print ("ind " , indSub)
 ## correspond à un debut d'impact (nouveau test) si le nombre entre 2 mesures est grand
 #indTestDebutB=ind(find(indSub>(tpsEntreMesures/(t(2)-t(1))))+1); # 
 #mat["tpsEntreMesures"]
+
 tpsEntreMesures = 3 
 indTestDebutB = []
 compt  = 0
@@ -173,7 +174,7 @@ for i in range (len(indic[:-1])) :
         indTestDebutB.append(indic[i+1])
         print ("le gaggnat",i)
     compt+=1
-        
+   
 nbrTests = len (indTestDebutB)
 print ("nbrde test = " ,len(indTestDebutB) )
 print ("temps debuts impact",indTestDebutB)
@@ -312,7 +313,7 @@ print('Energie (J) transmise dans la balle (sans perte) est :')
 print('eme colonne pour test d''impact numero j')
 print(Energie_balle)        
 plt.figure(1)
-plt.figure( figsize=(8, 6))
+plt.figure( figsize=(18, 16))
 #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 #    plot(t(indTestDebutB(ii):indTestFin(ii)),rad2deg(ang(indTestDebutB(ii):indTestFin(ii))),'.r');
 
