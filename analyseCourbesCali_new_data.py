@@ -18,6 +18,7 @@ import numpy as np
 from tkinter import filedialog
 from tkinter import *
 import tkinter
+from Main import *
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -50,10 +51,11 @@ if typeTest==2 :
 from pathlib import Path
 import numpy as np
 a = np.array([])
+Temps=[]
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "calib_raquette.txt"
+file_to_open = p.absolute() / "calib_balle.txt"
 
 print ("opening file")
 print(file_to_open)
@@ -68,7 +70,8 @@ for line in f:
         try :
 #            print (line)
             to_test =line.split(',')
-            val = float(to_test[1])
+            val = float(to_test[2])
+            if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/100))
 #            print ("val =",val)
         except :
             pass
@@ -80,9 +83,9 @@ for line in f:
             # conversion binaire, valeur reelle
     
             # fonction de transformation bit -> degre
-            transAng=(val*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
+            transAng=(val*360/(8192))*0.7; # le 0.8 est du à la bande de 10# -> 90# du capteur
 #            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-            a =np.append(a, transAng)
+            if transAng < 10000 : a =np.append(a, transAng)
 #            print (len(a))
         
 print ("len de rec =" , len(a))
@@ -256,15 +259,20 @@ rendement = np.zeros((nbTests,1))
 #t_test = [None]
 for i in range (nbTests):
     print ("pour inbrdetest donne indice zero et fin = ", i, ind0[i] , indTestFin [i] )
-#    t_test = ( np.arange(int(indTestFin[i]) - int(ind0[i]),0.001) )
     t_test = np.arange(int(ind0[i]), int(indTestFin[i]),0.001  )
-
-#    t_test = 80
-#    temp = ((int(indTestFin[i]) - int(ind0[i])) * 40 * 20 ) / 1000000
-#    temp_test = np.arange(0,temp , step = 40*20 / 1000000 ) 
+#    Temps = Temps / 1000000
+#    t_test = Temps[ int(ind0[i]): int(indTestFin[i]) ] 
     temp = ((int(indTestFin[i]) - int(ind0[i])) ) / 1000
+#    temp = 
     temp_test = np.arange(0,temp , step = 1 / 1000 ) 
-    ang_test =   - ang [ int (ind0[i]) : int (indTestFin [i]) ]  
+    ang_test =   - ang [ int (ind0[i]) : int (indTestFin [i]) ]
+#-----nouvelle version avec temp reel
+    t_test = Temps[ int(ind0[i]): int(indTestFin[i]) ] 
+    temp =  (t_test[-1]-t_test[0])/10000
+    t_test = np.asarray(t_test)
+    temp_test= t_test - t_test[0]
+    temp_test = temp_test / 10000
+#------fin nouvelleversion
 #    ang_test =   ang [ int (ind0[i]) : int (indTestFin [i]) ]  
     print ("fin de la zone test")
     print ("len de time test = ", len(t_test) , t_test)
@@ -272,6 +280,8 @@ for i in range (nbTests):
     print ("len de temp test = ", len(temp_test) , temp_test)
     print ()
     print ('le temps calculé est de = ' ,  temp)
+    
+    
     """
     for n=1:nbTests  # pour chaque test identifié
       
@@ -342,8 +352,9 @@ for i in range (nbTests):
     for i in ind_n :
         pic_n = np.append ( pic_n ,ang_test[i])
     print (" et les pics = ", pic_n)
+    
     #indexes = detect_peaks(ang, mph=0.3 , mpd=1000)
-    rendement[n] = math.pow( ((1-math.cos(pic[-1])))/(1-math.cos(pic[1])) , 1/(4*(nbOscillations - 1)) )
+    rendement[n] = math.pow( ((1-math.cos(pic_n[-1])))/(1-math.cos(pic_n[1])) , 1/(4*(nbOscillations - 1)) )
     print ( " le rendemlent calculé = ", rendement[n])
     diffT = np.array([])
     diffT =  t_test[ind_n[2:]] -t_test[ind_n[1:-1]]
@@ -394,6 +405,8 @@ for i in range (nbTests):
         Iinit = 0.55
         cmin = [mL, 0,    0.4,  -0.01,  1]
         cmax = [mL, 0.02, 0.7  ,   0.01,  5]
+        cmin = [mL, 0,    0.5,  -0.01,  1]
+        cmax = [mL, 0.02, 0.6,   0.01,  3.5]
     if typeTest == 2 :
         mLinit=float(mRaquette)*1e-3*(float(posCdGRaquette)*1e-3+float(posRaquette))+float(mBras)*float(posCdGBras); # mL est imposé
         mL = mLinit 
@@ -420,8 +433,11 @@ for i in range (nbTests):
 #    cmin = [ ml , 0.03 , 0.2 , -0.01 , 2 ]
     #Iinit = 0.238
     pos0init=0;
-    vit0init = (ang_test[10] - ang_test[1]) / (t_test[10] - t_test[1])
-#    vit0init = 0.7
+    vit0init = (ang_test[10] - ang_test[1]) / (t_test[10]/1000 - t_test[1]/1000)
+#    vit0init = vit0init * 10000
+    print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10]/1000,t_test[1]/1000)
+    
+    vit0init = vit0init 
 
     print ("vit0)init  = ", vit0init)  
 #--------------------------------
@@ -477,11 +493,11 @@ for i in range (nbTests):
 #        print ("donnes =" , c)
         param = (c[0], c[1] , c[2])
         t0 = 0.0 
-        tmax = 12.0
+        tmax = 14.0
         from scipy import integrate
         #from scipy.integrate import odeint
         solED = integrate.solve_ivp(lambda t, y:EDCoulomb(t,y,param) , (t0, tmax) , (c[3], c[4])  , max_step = 0.001,dense_output=True, rtol = 1e-5,atol = 1e-8)    
-        print( solED)
+#        print( solED)
 #        fxi  = solED.y[0][:len (ang_test)]
 #        res  = np.sum(fxi-ang_test)*math.ceil(math.log2(abs(2)))  
         from scipy.integrate import odeint
@@ -510,8 +526,8 @@ for i in range (nbTests):
 #    (xsol , fval) = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init], ftol = 1e-2 , xtol = 1e-2  )    
 #    xsol = optimize.fmin(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] )    
 #    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , bounds=bounds, tol = 1e-2  )
-#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
-    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'ftol': 1e-2}  )
+    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [t_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init] , method='Nelder-Mead' , tol = 1e-2, bounds=bounds,options={ 'xatol': 1e-2, 'fatol': 1e-2}  )    
+#    xsol = optimize.minimize(lambda x : Myfun2Minimize ( x, [temp_test , ang_test]) ,[mLinit,kvlinit,Iinit,pos0init,vit0init],  method='L-BFGS-B', bounds=bounds,options={ 'xatol': 1e-2, 'ftol': 1e-2}  )
     
     
     print ("totut = ", xsol) 
@@ -571,21 +587,21 @@ for i in range (nbTests):
     
     plt.subplot(613)
     plt.ylabel('teta')
-    #plt.plot( temp_test ,  ang_test ,'k', ind_n, pic_n ,'ro' )
-    plt.plot( temp_test ,  ang_test ,'k' )
+    plt.plot( temp_test ,  ang_test ,'k', temp_test[ind_n], pic_n ,'ro' )
+#    plt.plot( temp_test ,  ang_test ,'k' )
     
     plt.subplot(614)
     plt.ylabel('teta')
-    plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
+    plt.plot( temp_test ,  ang_test ,'k' )
     
     plt.subplot(615)
     plt.ylabel('accel')
-    plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
+    plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
     
     plt.subplot(616)
     plt.ylabel('accel')
-    plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
-    
+    plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
+
     plt.show()
 
     """
