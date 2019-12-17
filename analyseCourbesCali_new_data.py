@@ -55,7 +55,7 @@ Temps=[]
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "calib_balle.txt"
+file_to_open = p.absolute() / "calib_bal_p.txt"
 
 print ("opening file")
 print(file_to_open)
@@ -70,12 +70,11 @@ for line in f:
         try :
 #            print (line)
             to_test =line.split(',')
-            val = float(to_test[2])
-            if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/100))
+            val = float(to_test[3])
 #            print ("val =",val)
         except :
             pass
-#            print("bad")
+            print("bad")
 #            print (line)
         else :
 #            print ("good" , val)
@@ -83,9 +82,12 @@ for line in f:
             # conversion binaire, valeur reelle
     
             # fonction de transformation bit -> degre
-            transAng=(val*360/(8192))*0.7; # le 0.8 est du à la bande de 10# -> 90# du capteur
+            if len(to_test) == 6 :
+                transAng=(val*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
 #            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-            if transAng < 10000 : a =np.append(a, transAng)
+                if transAng < 10000 : a =np.append(a, transAng)
+                if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/1000))
+
 #            print (len(a))
         
 print ("len de rec =" , len(a))
@@ -268,10 +270,10 @@ for i in range (nbTests):
     ang_test =   - ang [ int (ind0[i]) : int (indTestFin [i]) ]
 #-----nouvelle version avec temp reel
     t_test = Temps[ int(ind0[i]): int(indTestFin[i]) ] 
-    temp =  (t_test[-1]-t_test[0])/10000
+    temp =  (t_test[-1]-t_test[0])/1000
     t_test = np.asarray(t_test)
     temp_test= t_test - t_test[0]
-    temp_test = temp_test / 10000
+    temp_test = temp_test 
 #------fin nouvelleversion
 #    ang_test =   ang [ int (ind0[i]) : int (indTestFin [i]) ]  
     print ("fin de la zone test")
@@ -437,7 +439,7 @@ for i in range (nbTests):
 #    vit0init = vit0init * 10000
     print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10]/1000,t_test[1]/1000)
     
-    vit0init = vit0init 
+#    vit0init = 1.96
 
     print ("vit0)init  = ", vit0init)  
 #--------------------------------
@@ -599,9 +601,10 @@ for i in range (nbTests):
     plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
     
     plt.subplot(616)
-    plt.ylabel('accel')
-    plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
-
+    plt.ylabel('les deux')
+#    plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
+    plt.plot( temp_test/1000 ,  ang_test ,'k' )
+    plt.plot( solEDR.t ,  solEDR.y[0] ,'b' )
     plt.show()
 
     """
@@ -714,6 +717,105 @@ end
 
 
 # le calibrage de la balle et de la raquette donnent en sortie le couple
+ mLI = [mL , I]
+# avec m masse totale
+# L position du centre de gravite
+# I moment d'inertie
+
+# l'energie à l'impact est ensuite calculée en utilisant ces valeurs de mL et I
+
+# ils donnent aussi les rendements des differents tests dans rendement_raquette.mat et rendement_balle.mat
+
+
+
+#Ajouté par Pierrick
+# testSauve=input('Voulez-vous sauvegarder toutes les datas de cette calibration ? (oui => 1 / non par default) ');
+testSauve=1;
+cd(current.data) # Je change mon current directory
+        switch testSauve
+            case 1
+                save(['Calibration_',nomRaquette])
+            otherwise # par default, on n'enregistre rien
+        end
+cd(current.script) # je restaure mon ancien current directory
+"""
+## ========================================================================
+#  post-processing, enregistrement
+# =========================================================================
+# enregistre ces valeurs en dur dans le workspace
+print ("rendement = " , rendement)
+print ("mLI =" , mLI)
+print ("file tot write")
+
+import os.path
+print ("typeTest=",typeTest)
+if typeTest == 1 : #balle
+    print ("type=test =",typeTest)
+    if os.path.isfile('mLI_balle.py'):# recupere précédentes valeurs
+        from mLI_balle import mLI_b
+        print('*******************************************************')
+        print('les valeurs caractéristiques du dernier calibrage balle étaient ', mLI_b)
+    print('*******************************************************')
+    print('les nouvelles valeurs du calibrage balle sont:' , mLI)
+    print('*******************************************************')   
+    if os.path.isfile('rendement_balle.py'):
+        from rendement_balle import rendement_b
+        print('*******************************************************')
+        print('les valeurs caractéristiques du dernier rendement balle étaient ', rendement_b)
+    print('*******************************************************')
+    print('les nouvelles valeurs du rendement balle sont:' , rendement)
+    print('*******************************************************')  
+    
+    testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
+    testSauve=1;
+    if testSauve == 1 :
+        file_to_write = open("mLI_balle.py","w+")
+        file_to_write.write("mLI_b = " + repr(mLI) + "\n")
+        file_to_write.flush()
+        file_to_write.close()
+        file_to_write = open("rendement_balle.py","w+")
+#        file_to_write.write("rendement_b = " + repr(rendement) + "\n")
+        file_to_write.write("rendement_b = " + (rendement) + "\n")
+        file_to_write.close()
+if typeTest == 2 : #raquette
+    print ("type=test =",typeTest)
+    if os.path.isfile('mLI_raquette.py'):# recupere précédentes valeurs
+        from mLI_raquette import mLI_r
+        print('*******************************************************')
+        print('les valeurs caractéristiques du dernier calibrage raquette étaient ', mLI_r)
+    print('*******************************************************')
+    print('les nouvelles valeurs du calibrage requette sont:' , mLI)
+    print('*******************************************************')   
+    if os.path.isfile('rendement_raquette.py'):
+        from rendement_raquette import rendement_r
+        print('*******************************************************')
+        print('les valeurs caractéristiques du dernier rendement raquette étaient ', rendement_r)
+    print('*******************************************************')
+    print('les nouvelles valeurs du rendement raquette sont:' , rendement)
+    print('*******************************************************')  
+    
+    testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
+    testSauve=1;
+    if testSauve == 1 :
+        file_to_write = open("mLI_raquette.py","w+")
+        file_to_write.write("mLI_r = " + repr(mLI) + "\n")
+        file_to_write.flush()
+        file_to_write.close()
+        file_to_write = open("rendement_raquette.py","w+")
+        file_to_write.write("rendement_r = " + repr(rendement) + "\n")
+        file_to_write.close()
+"""   
+end
+
+# enleve les lignes pour lesquelles on a dit que la courbe n'était pas OK
+mLI(indAEnlever,:)=[];
+rendement(indAEnlever,:)=[];
+
+
+
+
+
+# le calibrage de la balle et de la raquette donnent en sortie le couple
 # mLI = [mL , I]
 # avec m masse totale
 # L position du centre de gravite
@@ -738,37 +840,25 @@ cd(current.script) # je restaure mon ancien current directory
 """
 print ("size = ", a.size)
 #time = np.arange(0.0, 64058, 1)
-time = np.arange(0.0, len(a), 1)
+time = np.arange(0.0, len(ang), 1)
 
 plt.figure(1)
 plt.figure( figsize=(8, 16))
 #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 
-plt.subplot(611)
+plt.subplot(311)
 plt.ylabel('teta')
 plt.plot(time ,  a,'k' )
 
-plt.subplot(612)
+plt.subplot(312)
 plt.ylabel('teta')
 plt.plot(time , ang,'k', indexes, pic , 'ro', ind0 , val_ind0 ,'bo' , indTestFin , valTestFin , 'go' )
 
-plt.subplot(613)
+plt.subplot(313)
 plt.ylabel('teta')
 #plt.plot( temp_test ,  ang_test ,'k', ind_n, pic_n ,'ro' )
 plt.plot( temp_test ,  ang_test ,'k' )
+plt.plot( solEDR.t ,  solEDR.y[0] ,'b' )
 
-plt.subplot(614)
-plt.ylabel('teta')
-plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
-
-plt.subplot(615)
-plt.ylabel('accel')
-plt.plot( solEDR.t ,  solEDR.y[1] ,'k' )
-
-plt.subplot(616)
-plt.ylabel('accel')
-plt.plot( solEDR.t ,  solEDR.y[0] ,'k' )
 
 plt.show()
-
-
