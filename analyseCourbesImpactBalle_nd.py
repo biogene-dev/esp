@@ -90,13 +90,13 @@ for line in f:
                 transAng=(val*360/(8192*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
 #            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
                 if transAng < 10000 : a =np.append(a, transAng)
-                if int(to_test[0])< 9999999999 : t= np.append(t , int (int(to_test[0])/1000) ) 
+                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
 
 #            print (len(a))
         
 print ("len de rec =" , len(a))
 print (a)
-
+t= t-t[0]
 #ang = a; # angle en radian
 ang=np.radians(-a); # angle en radian
 
@@ -274,7 +274,7 @@ for n in range (nbrTests):
     t_test=t[int(indTestDebutB[n]):int(indTestFin[n])];
     ang_test=ang[int(indTestDebutB[n]):int(indTestFin[n])]; 
 #    # recale de telle manière que le premier temps soit=0
-    t_test=t_test-t_test[1];
+    t_test=t_test-t_test[0];
     
 #    #----- interpolation lineaire de la mesure sur ce petit intervalle
 #    p=polyfit(t_test,ang_test,1)

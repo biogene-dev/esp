@@ -81,7 +81,7 @@ for line in f:
         try :
 #            print (line)
             to_test =line.split(',')
-            val = float(to_test[2])
+            val = float(to_test[2])*-1
 #            print ("val =",val)
         except :
             pass
@@ -97,7 +97,7 @@ for line in f:
                 transAng=(val*360/(8192*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
 #            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
                 if transAng < 10000 : a =np.append(a, transAng)
-                if int(to_test[0])< 9999999999 : t= np.append(t , int (int(to_test[0])/1000) ) 
+                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
 
 #            print (len(a))
         
