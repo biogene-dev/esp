@@ -219,104 +219,104 @@ if typeTest == 2 :  # raquette
 ## -----------------------------------------------------------
 #               ANALYSE COURBE REPONSE IMPACT
 # ------------------------------------------------------------
-if typeTest == 3 :
+if typeTest == "3" :
+    print ("===IMPACT===")
 
 # va utiliser les données renseignées par la calibration côté balle et côté
 # raquette
 # type test 1 et type test 2 donc doivent être effectués avant
-
-        mesures = Acquisition(150,typeTest,current); # output :1x3 cell avec les mesures angles + l'accelero
-        
-        analyseCourbesImpactBalle  # output: Energie_balle (pour n tests)
-                      
-        analyseCourbesImpactRaquette # outpu: Energie_raquette (pour n tests)
-        
-        testAcc= 1;     # Ajouté par Pierrick
-        # testAcc=input('faire l''analyse sur l''accéléro ? 1=oui (0=non) ===> '); # pour pas faire automatiquement
-        # l'analyse sur l'accéléromètre (ex s'il est pas branché...)
-        if testAcc :
-            analyseCourbesAccelero
-        end
+    import os
+#        mesures = Acquisition(150,typeTest,current); # output :1x3 cell avec les mesures angles + l'accelero
+    exec(open("acqui.py").read())
+    exec(open("analyseCourbesImpactBalle_nd.py").read())  # output: Energie_balle (pour n tests)
+                  
+    exec(open("analyseCourbesImpactRaquette_nd.py").read()) # outpu: Energie_raquette (pour n tests)
+    
+#    testAcc= 1;     # Ajouté par Pierrick
+#    # testAcc=input('faire l''analyse sur l''accéléro ? 1=oui (0=non) ===> '); # pour pas faire automatiquement
+#    # l'analyse sur l'accéléromètre (ex s'il est pas branché...)
+#    if testAcc :
+#        analyseCourbesAccelero
+#    end
         
 ## -----------------------------------------------------------
 #               CALCUL COEFF RESTITUTION
 # ------------------------------------------------------------
 # utilise les données (Energies) sorties par les routines analyseCourbesImpactBalle
 # et analyseCourbesImpactRaquette
-"""
-# enlever les resultats des tests non concluants (ceux non validés par
-# l'utilisateur)
-        Energie_balle(sort(indAEnlever))=[];
-        Energie_raquette(sort(indAEnlever))=[];
-        Energie_balle_cplt(:,sort(indAEnlever))=[];
-        Energie_raquette_cplt(:,sort(indAEnlever))=[];
-
-
-        print('*******************************************************')
-        print('Les coefficients de restitution (#) trouvés sont :');
-        restitution=Energie_balle./Energie_raquette*100   # rapport des 2 énergies
-        #==> ce sont les coefficients de restitution énergétique (et non de
-        #vitesse)
-
-        # possibilité de sauvegarder en dur les résultats
-        testSauve=1;        # ajoutée par Pierrick
-#         testSauve=input('Voulez-vous sauvegarder les coefficients de restitution ? (oui => 1 / non par default) ');
-        switch testSauve
-            case 1
-                fid=fopen('restitutionResultats.csv','a');
-                maDate=datestr(now);
-                fprintf(fid,'#s\n',maDate);
-                load('nomRaquette.mat');
-                fprintf(fid,'#s\n',nomRaquette);
-                str='';
-                for ii=1:length(restitution)
-                    str=[str '#4.2f '];
-                end
-                str=[str '\n'];
-                fprintf(fid,str,restitution');
-                fclose(fid);
-
-            otherwise # par default, on n'enregistre rien
-        end
-
-## -----------------------------------------------------------
-#               Autre choix pas possible
-    otherwise
-        print('Mauvaise valeur du type de test, choisir entre 1 et 3')
-end
-
-###Pierrick a crée les toutes les lignes suivantes. 
-switch typeTest # type de test choisi par l'utilisateur
-case 3
-#On crée une version pour copier-coller sur Excel
-zz1_Restitution = restitution';
-zz2_AmpliPP = amplitudePP';
-zz3_EnergieRaquette = Energie_raquette';
-zz4_VitesseRaquette = (vitesse*3.6)';
-zz5_EnergieBalle = Energie_balle';
-zz6_VitesseBalle = vitesseBallekmh';
-zz7_NRJ_Totale = valEnergieFreqTout';
-zz8_NRJ_60a80Hz = valEnergieFreqBande';
-zzz(:,1) = zz1_Restitution;
-zzz(:,2) = zz2_AmpliPP;
-zzz(:,3) = zz3_EnergieRaquette;
-zzz(:,4) = zz4_VitesseRaquette;
-zzz(:,5) = zz5_EnergieBalle;
-zzz(:,6) = zz6_VitesseBalle;
-zzz(:,7) = zz7_NRJ_Totale;
-zzz(:,8) = zz8_NRJ_60a80Hz;
-
-#On enregistre la courbe de l'angle de la raquette
-testSauve=1;        # ajoutée par Pierrick
-# testSauve=input('Voulez-vous sauvegarder toutes les datas de cette raquette ? (oui => 1 / non par default) ');
-cd(current.data) # Je change mon current directory
-save('nomRaquette.mat','nomRaquette') #On a besoin du nom de la raquette
-        switch testSauve
-            case 1
-                load('nomRaquette.mat');
-                save(nomRaquette)
-            otherwise # par default, on n'enregistre rien
-        end
-end
-cd(current.script) # je restaure mon ancien current directory
-"""
+#
+## enlever les resultats des tests non concluants (ceux non validés par
+## l'utilisateur)
+#        Energie_balle(sort(indAEnlever))=[];
+#        Energie_raquette(sort(indAEnlever))=[];
+#        Energie_balle_cplt(:,sort(indAEnlever))=[];
+#        Energie_raquette_cplt(:,sort(indAEnlever))=[];
+#
+#
+#        print('*******************************************************')
+#        print('Les coefficients de restitution (#) trouvés sont :');
+#        restitution=Energie_balle./Energie_raquette*100   # rapport des 2 énergies
+#        #==> ce sont les coefficients de restitution énergétique (et non de
+#        #vitesse)
+#
+#        # possibilité de sauvegarder en dur les résultats
+#        testSauve=1;        # ajoutée par Pierrick
+##         testSauve=input('Voulez-vous sauvegarder les coefficients de restitution ? (oui => 1 / non par default) ');
+#        switch testSauve
+#            case 1
+#                fid=fopen('restitutionResultats.csv','a');
+#                maDate=datestr(now);
+#                fprintf(fid,'#s\n',maDate);
+#                load('nomRaquette.mat');
+#                fprintf(fid,'#s\n',nomRaquette);
+#                str='';
+#                for ii=1:length(restitution)
+#                    str=[str '#4.2f '];
+#                end
+#                str=[str '\n'];
+#                fprintf(fid,str,restitution');
+#                fclose(fid);
+#
+#            otherwise # par default, on n'enregistre rien
+#        end
+#
+### -----------------------------------------------------------
+##               Autre choix pas possible
+#    otherwise
+#        print('Mauvaise valeur du type de test, choisir entre 1 et 3')
+#end
+#
+####Pierrick a crée les toutes les lignes suivantes. 
+#switch typeTest # type de test choisi par l'utilisateur
+#case 3
+##On crée une version pour copier-coller sur Excel
+#zz1_Restitution = restitution';
+#zz2_AmpliPP = amplitudePP';
+#zz3_EnergieRaquette = Energie_raquette';
+#zz4_VitesseRaquette = (vitesse*3.6)';
+#zz5_EnergieBalle = Energie_balle';
+#zz6_VitesseBalle = vitesseBallekmh';
+#zz7_NRJ_Totale = valEnergieFreqTout';
+#zz8_NRJ_60a80Hz = valEnergieFreqBande';
+#zzz(:,1) = zz1_Restitution;
+#zzz(:,2) = zz2_AmpliPP;
+#zzz(:,3) = zz3_EnergieRaquette;
+#zzz(:,4) = zz4_VitesseRaquette;
+#zzz(:,5) = zz5_EnergieBalle;
+#zzz(:,6) = zz6_VitesseBalle;
+#zzz(:,7) = zz7_NRJ_Totale;
+#zzz(:,8) = zz8_NRJ_60a80Hz;
+#
+##On enregistre la courbe de l'angle de la raquette
+#testSauve=1;        # ajoutée par Pierrick
+## testSauve=input('Voulez-vous sauvegarder toutes les datas de cette raquette ? (oui => 1 / non par default) ');
+#cd(current.data) # Je change mon current directory
+#save('nomRaquette.mat','nomRaquette') #On a besoin du nom de la raquette
+#        switch testSauve
+#            case 1
+#                load('nomRaquette.mat');
+#                save(nomRaquette)
+#            otherwise # par default, on n'enregistre rien
+#        end
+#end
+#cd(current.script) # je restaure mon ancien current directory
