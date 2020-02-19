@@ -21,7 +21,7 @@ print ("start")
 ## ========================================================================
 # Recupere les donnees enregistrees lors du calibrage
 # =========================================================================
-print ("start ENERGIE RAQUETTE")
+print ("start")
 """
 if exist('rendement_raquette.mat','file')
     disp('*******************************************************')
@@ -63,54 +63,47 @@ from pathlib import Path
 import numpy as np
 a = np.array([])
 t = np.array([])
-#data_folder = Path("source_data/text_files/")
-#p = Path('.')
-#print (p.absolute())
-#file_to_open = p.absolute() / "impact_nd.txt"
-#
-#print ("opening file")
-#print(file_to_open)
-#f= open(file_to_open,"r")
-#(f.read(1000)) 
-#val = 0.0 
-#print ("Formatage des datas")
-#rating = 0
-#for line in f:
-#    rating +=1
-#    if line :
-#        try :
-##            print (line)
-#            to_test =line.split(',')
-#            val = float(to_test[2])*-1
-##            print ("val =",val)
-#        except :
-#            pass
-#            print("bad")
-##            print (line)
-#        else :
-##            print ("good" , val)
-#            # ----------------------------
-#            # conversion binaire, valeur reelle
-#    
-#            # fonction de transformation bit -> degre
-#            if len(to_test) == 6 :
-#                transAng=(val*360/(8192*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-##            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-#                if transAng < 10000 : a =np.append(a, transAng)
-#                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
-#
-##            print (len(a))
+data_folder = Path("source_data/text_files/")
+p = Path('.')
+print (p.absolute())
+file_to_open = p.absolute() / "impact_nd.txt"
 
-global temps
-global raquette
-global balle
-global accelero
+print ("opening file")
+print(file_to_open)
+f= open(file_to_open,"r")
+(f.read(1000)) 
+val = 0.0 
+print ("Formatage des datas")
+rating = 0
+for line in f:
+    rating +=1
+    if line :
+        try :
+#            print (line)
+            to_test =line.split(',')
+            val = float(to_test[2])*-1
+#            print ("val =",val)
+        except :
+            pass
+            print("bad")
+#            print (line)
+        else :
+#            print ("good" , val)
+            # ----------------------------
+            # conversion binaire, valeur reelle
+    
+            # fonction de transformation bit -> degre
+            if len(to_test) == 6 :
+                transAng=(val*360/(8192*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
+#            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
+                if transAng < 10000 : a =np.append(a, transAng)
+                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
 
-a = raquette
-t = temps
+#            print (len(a))
+        
 print ("len de rec =" , len(a))
 print (a)
-t = t -t[0]
+
 #ang = a; # angle en radian
 ang=np.radians(-a); # angle en radian
 
@@ -161,7 +154,7 @@ indexes = detect_peaks(ang, mph=0.3 , mpd=1000)
 
 ind=[]
 from detect_peaks import detect_peaks
-indPic = detect_peaks(ang, mph=0.02 , mpd=1000)
+indPic = detect_peaks(ang, mph=0.087 , mpd=1000)
 compt = 1
 ind = indPic 
 np.insert(ind , 0 ,0 )
@@ -191,7 +184,8 @@ indPic = ind[np.where((periode)>tpsEntreMesures)]
 nbTestRaq=len(indPic);
 print ("le nombre de test raq =",nbTestRaq)
 
-plt.figure(1)
+plt.ion()
+#plt.figure(1)
 plt.figure( figsize=(8, 6))
 #plt.gcf().subplots_adjust(wspace = 0, hspace = 4)
 #    plot(t(indTestDebutB(ii):indTestFin(ii)),rad2deg(ang(indTestDebutB(ii):indTestFin(ii))),'.r');
@@ -199,7 +193,7 @@ plt.figure( figsize=(8, 6))
 plt.ylabel('teta')
 plt.plot(t , ang,'k' )
 plt.plot(t[indPic] , ang[indPic],'ro')
-plt.show()
+plt.draw()
 
 indTestDebut = []
 indTestFin = []
@@ -216,14 +210,14 @@ for i in range (nbTestRaq) :
 print ("nbrde test = " ,len(indTestDebut) )
 print ("temps debuts impact",indTestDebut)
 
-plt.figure(1)
+#plt.figure(1)
 plt.figure( figsize=(8, 6))
 plt.plot(t , ang,'k' )
 
 for ii in range(nbTestRaq):
     plt.plot(t[int(indTestDebut[ii]):indTestFin[ii]],ang[int(indTestDebut[ii]):indTestFin[ii]],'.r');
 plt.show()
-
+plt.close(1)
 # part de ces pics et recule dans les increments pour recuperer les indTestDebut et indTestFin juste avant
 
 #for ii=1:nbTestRaq
@@ -310,11 +304,16 @@ for n in range (nbTestRaq):
     print ("t_test = ",t_test)
     t_test=t_test-t_test[0]
     
+    plt.plot(t_test,ang_test,'.')
+    plt.show()
 #    #----- interpolation lineaire de la mesure sur ce petit intervalle
 #    p=polyfit(t_test,ang_test,1)
     p=np.polyfit(t_test,ang_test,1)
     mesRegress = p[0]*t_test+p[1]
     print('recherche accent')
+    save_essai = input("voulez-vous sauvegarder cette essai")
+    plt.plot(t_test,mesRegress,'-c')
+    plt.show()  
 #    mesRegress=p(1)*t_test+p(2);
 #    hold on
 #    plot(t_test,rad2deg(mesRegress),'-c'); # trace l'interpolation lineaire
@@ -349,7 +348,7 @@ for n in range (nbTestRaq):
 #disp('Energie (J) transmise dans la balle (sans perte) est :')
 ## disp('j''eme colonne pour test d''impact numero j')
 #Energie_balle
-    print ("Test numero =", n , " / vitesse balle a = " , theta ," /degres apres impact=", vitesse*3.6 , "km/h = " )
+    print ("Test numero =", n , " / vitesse raquette a = " , theta ," degres avant impact=", vitesse*3.6 , " km/h = " )
 #    #----- energie apres impact    
     for ii in range (len(mLI_r)):
         g = 9.81
@@ -361,7 +360,7 @@ for n in range (nbTestRaq):
 #
 Energie_raquette=np.mean(Energie_raquette_cplt);
 print('*******************************************************')
-print('Energie (J) transmise dans la raquette (sans perte) est :')
+print('Energie (J) transmise dans la balle (sans perte) est :')
 print('eme colonne pour test d''impact numero j')
 print(Energie_raquette)        
 #plt.figure(1)
@@ -382,3 +381,4 @@ print(Energie_raquette)
 #plt.plot(t[indic] , ang[indic],'r' )
 #
 #plt.show()
+
