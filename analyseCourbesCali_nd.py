@@ -18,7 +18,7 @@ import numpy as np
 from tkinter import filedialog
 from tkinter import *
 import tkinter
-from Main import *
+#from Main import *
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -27,7 +27,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 
 import numpy as np
-
+global typeTest
 # script utilisé lors de calibrage (raquette ou balle) pour trouver les propriétés
 # de masse, inertie, et rendement des 2 axes
 # les données sont dans la variable 'mesures' qui sort de la fonction 'Acquisition'
@@ -41,7 +41,7 @@ def plot_simple (to_plot):
 # si calibrage raquette, demande autres informations
 
 print ("=========calibration=======")
-typeTest =2
+#typeTest =2
 if typeTest==2 :
     print('*******************************************************')
     mRaquette=input('Masse de la raquette ? (en g) ==> ') 
@@ -67,53 +67,56 @@ global temps
 global raquette
 global balle
 global accelero
-temps= np.array([])
-balle= np.array([])
-raquette= np.array([])
-accelero= np.array([])
+#temps= np.array([])
+#balle= np.array([])
+#raquette= np.array([])
+#accelero= np.array([])
 file_name = "calib.txt"
 f = open(file_name, "r") 
 (f.read(1000)) 
 val = 0.0 
-print ("Formatage des datas")
-rating = 0
-for line in f:
-    rating +=1
-    if line :
-        try :
-#            print (line)
-            
-            to_test =line.split(',')
-            val1 = float(to_test[0])
-            val2 = float (to_test[2]) * -1
-            val3 = float (to_test[3])
-            val4 = float (to_test[4])
-#            print ("val =",val)
-        except :
-            pass
-            print("bad")
-#            print (line)
-        else :
-#            print ("good" , val)
-            # ----------------------------
-            # conversion binaire, valeur reelle
-    
-            # fonction de transformation bit -> degre
-            if ( len(to_test) == 6 ) and (val2 < 10000) and (val3 < 10000) and (val4 < 10000) :
-                if int(to_test[0])< 9999999999:
-                    temps = np.append(temps , int(int(val1)/1000))
-                    raquette = np.append(raquette , (val2*360/(8192))*0.8 )
-                    balle = np.append(balle , (val3*360/(8192))*0.8 )
-                    accelero = np.append(accelero , val4)
-#                val2=(val2*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
-##            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-#                if transAng < 10000 : a =np.append(a, transAng)
-#                if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/1000))
-
-#            print (len(a))
+#print ("Formatage des datas")
+#rating = 0
+#for line in f:
+#    rating +=1
+#    if line :
+#        try :
+##            print (line)
+#            
+#            to_test =line.split(',')
+#            val1 = float(to_test[0])
+#            val2 = float (to_test[2]) * -1
+#            val3 = float (to_test[3])
+#            val4 = float (to_test[4])
+##            print ("val =",val)
+#        except :
+#            pass
+#            print("bad")
+##            print (line)
+#        else :
+##            print ("good" , val)
+#            # ----------------------------
+#            # conversion binaire, valeur reelle
+#    
+#            # fonction de transformation bit -> degre
+#            if ( len(to_test) == 6 ) and (val2 < 10000) and (val3 < 10000) and (val4 < 10000) :
+#                if int(to_test[0])< 9999999999:
+#                    temps = np.append(temps , int(int(val1)/1000))
+#                    raquette = np.append(raquette , (val2*360/(8192))*0.8 )
+#                    balle = np.append(balle , (val3*360/(8192))*0.8 )
+#                    accelero = np.append(accelero , val4)
+##                val2=(val2*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
+###            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
+##                if transAng < 10000 : a =np.append(a, transAng)
+##                if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/1000))
+#
+##            print (len(a))
         
 print ("len de rec =" , len(balle))
-a = raquette
+if typeTest == 1 :
+    a = balle
+if typeTest == 2 :
+    a = raquette
         
 print ("len de rec =" , len(a))
 print (a)
@@ -139,7 +142,7 @@ ang = ang*-1
 #ind=[1;ind]; # rajoute l'indice 0 en début
 plot_simple(ang)
 from detect_peaks import detect_peaks
-indexes = detect_peaks(ang, mph=0.2 , mpd=1000)
+indexes = detect_peaks(ang, mph=0.15 , mpd=1000)
 
 pic = np.array([])
 
@@ -342,15 +345,15 @@ for num_Test in range (nbTests):
     if typeTest == 2 :
         mLinit=float(mRaquette)*1e-3*(float(posCdGRaquette)*1e-3+float(posRaquette))+float(mBras)*float(posCdGBras); # mL est imposé
         mL = mLinit 
-#        mL = 0.74
+        mL = 0.74
         print ("MLinit = ", mL)
         kvlinit = 0.035
-        Iinit=float(math.sqrt(T))*float(mLinit)*9.81/(4*math.sqrt(math.pi));      # T période moyenne          
+        Iinit=float(math.pow(T,2))*float(mLinit)*9.81/(4*math.pow(math.pi,2));      # T période moyenne          
 #        Iinit=0.30;      # T période moyenne
         print ("I init = ", Iinit)
           
         cmin = [mL, 0.03, 0.2, -0.01,  2]
-        cmax = [mL, 0.04, 0.3,  0.01,  5]
+        cmax = [mL, 0.04, 0.3,  0.01,  4]
 #    posRaquette = 0.269; # raquettes de longueur 685mm
 #    mBras = 4.892; # PB et GR le 06/02/18
 #    posCdGBras = 0.179; # PB et GR le 06/02/18
@@ -368,7 +371,7 @@ for num_Test in range (nbTests):
 #    cmin = [ ml , 0.03 , 0.2 , -0.01 , 2 ]
     #Iinit = 0.238
     pos0init=0;
-    vit0init = (ang_test[10] - ang_test[1]) / (t_test[10]/1000 - t_test[1]/1000)
+    vit0init = (ang_test[10] - ang_test[0]) / (t_test[10]/1000 - t_test[0]/1000)
 #    vit0init = vit0init * 10000
     print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10]/1000,t_test[1]/1000)
     
@@ -443,7 +446,7 @@ for num_Test in range (nbTests):
         res = 0
         for i in range(len (fxi)):
             res += math.pow((fxi[i]-donnees[1][i]) , 2)
-        print ("res =¨" , res)
+        print ("res =" , res)
         return res
     """
         # utilisation de fminsearchbnd
@@ -570,8 +573,8 @@ if typeTest == 1 : #balle
     print('*******************************************************')  
     
     testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
-    testSauve=1;
-    if testSauve == 1 :
+#    testSauve=1;
+    if int(testSauve) == 1 :
         file_to_write = open("mLI_balle.py","w+")
 #        file_to_write.write("mLI_b = " + (mLI) + "\n")
         file_to_write.write("import numpy as np \n")
@@ -601,8 +604,9 @@ if typeTest == 2 : #raquette
     print('*******************************************************')  
     
     testSauve=input('Voulez-vous les sauvegarder ? (1 si OUI) ');
-    testSauve=1;
-    if testSauve == 1 :
+    
+#    testSauve=1;
+    if int(testSauve) == 1 :
         file_to_write = open("mLI_raquette.py","w+")
         file_to_write.write("import numpy as np \n")
         file_to_write.write("\n" + "mLI_r = np.array(" + str((mLI.tolist())) + ") \n")

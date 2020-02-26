@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Mar 21 18:00:03 2019
 
@@ -68,11 +67,11 @@ for line in f:
             # conversion binaire, valeur reelle
     
             # fonction de transformation bit -> degre
-            if ( len(to_test) == 6 ) and (val2 < 10000) and (val3 < 10000) and (val4 < 10000) :
+            if ( len(to_test) == 6 ) and (val2 < 6000) and (val3 < 8192) and (val4 < 8192) :
                 if int(to_test[0])< 9999999999:
-                    temps = np.append(temps , int(int(val1)/1000))
-                    raquette = np.append(raquette , (val2*360/(8192))*0.8 )
-                    balle = np.append(balle , (val3*360/(8192))*0.8 )
+                    temps = np.append(temps , (int(val1)/1000))
+                    raquette = np.append(raquette , (val2*360/(8192*0.8)) )
+                    balle = np.append(balle , (val3*360/(8192*0.8)) )
                     accelero = np.append(accelero , val4)
 #                val2=(val2*360/(8192))*0.8; # le 0.8 est du à la bande de 10# -> 90# du capteur
 ##            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
@@ -82,6 +81,5 @@ for line in f:
 #            print (len(a))
         
 print ("len de rec =" , len(balle))
-
 
 

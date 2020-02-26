@@ -12,6 +12,10 @@ from pathlib import Path
 #                   INITIALISATION
 # ------------------------------------------------------------
 import initialisation 
+global temps
+global raquette
+global balle
+global accelero
 
 # ====================================
 #           variables
@@ -71,13 +75,13 @@ posCdGBoule = 0.777; # PB et GR le 17/11/17
 
 # Poids du pendule Raquette (avec 26g de rondelles au niveau des vis qui 
 # tiennent le manche, rajoutées par PB le 26/02/2014)
-mBras = 4.892; # PB et GR le 06/02/18
+#mBras = 4.892; # PB et GR le 06/02/18
 
 # mBras = 3.95; # Gauvain Touch padel
 
 # Autres possibilités
 # mBras = 3.790; # poids initial du pendule tennis sans l'aimant
-# mBras = 4.137; # poids du pendule tennis avec l'aimant installé dessus
+mBras = 4.163; # poids du pendule tennis avec l'aimant installé dessus
 
 # mBras = 4.563; # Poids du pendule padel 
 
@@ -88,7 +92,7 @@ mBras = 4.892; # PB et GR le 06/02/18
 # Distance du CG du pendule raquette avec l'axe de rotation
 
 # avec le module tennis
-posCdGBras = 0.179; # PB et GR le 06/02/18
+posCdGBras = 0.132; # PB et GR le 06/02/18
 
 # avec le module Padel
 # posCdGBras = 0.260; # PB et GR le 06/02/18
@@ -107,6 +111,7 @@ posCdGBras = 0.179; # PB et GR le 06/02/18
 # Distance entre l'axe de rotation du codeur angulaire et le haut de 
 # la clé allen qui fixe la butée du manche (mètre). 
 posRaquette = 0.269; # raquettes de longueur 685mm
+posRaquette = 0.26; # raquettes de longueur 685mm
 
 
 # Autres possibilités
@@ -162,6 +167,7 @@ script_folder = '\Validation_Energie_Balle\esp_thorbot_install\python';
 
 
 ## ---------------------------
+global typeTest 
 
 
 print('*******************************************************')
@@ -181,11 +187,13 @@ typeTest=input ('type de test =======>  ');
 # ------------------------------------------------------------
 # lancer la balle seule en pendule libre, sûr de petites oscillations 
 # angle initial ~ 30-50 degrés
-print (" typeTest ===")
-print (typeTest)
-if typeTest == "1" :
+print (" typeTest ===",typeTest)
+typeTest = int (typeTest)
+if typeTest == 1 :
     print ("===TEST CALIBRAGE BALLE===")
-        
+    exec(open("acqui.py").read())
+    exec(open("analyseCourbesCali_nd.py").read())
+
 #    mesures = Acquisition(100,typeTest,current);   # 100 secondes de test par default pour calibrage balle
     # fait l'acquisition et save data dans calBalle-date-.csv
     
@@ -203,9 +211,12 @@ if typeTest == 2 :  # raquette
         
         # lancer la raquette en pendule libre, sur de petites oscillations 
         # angle initial ~ 30-50 degrés
-
-        nomRaquette=input('nom de la raquette ? ==> ','s'); # demande nom de la raquette
-        save('nomRaquette','nomRaquette'); # enregistre en dur sous fichier .mat
+    print ("===TEST CALIBRAGE RAQUETTE===")
+    exec(open("acqui.py").read())
+    exec(open("analyseCourbesCali_nd.py").read())
+    
+#        nomRaquette=input('nom de la raquette ? ==> ','s'); # demande nom de la raquette
+#        save('nomRaquette','nomRaquette'); # enregistre en dur sous fichier .mat
 #        mesures = Acquisition(80,typeTest,current); # 80sec de temps d'acquisition
         # fait l'acquisition et save data dans calibBalle-nomRaquette-date.csv
 
@@ -219,7 +230,7 @@ if typeTest == 2 :  # raquette
 ## -----------------------------------------------------------
 #               ANALYSE COURBE REPONSE IMPACT
 # ------------------------------------------------------------
-if typeTest == "3" :
+if typeTest == 3 :
     print ("===IMPACT===")
 
 # va utiliser les données renseignées par la calibration côté balle et côté
@@ -231,7 +242,8 @@ if typeTest == "3" :
     exec(open("analyseCourbesImpactBalle_nd.py").read())  # output: Energie_balle (pour n tests)
                   
     exec(open("analyseCourbesImpactRaquette_nd.py").read()) # outpu: Energie_raquette (pour n tests)
-    
+    exec(open("analyseCourbesAccelero_nd.py").read()) # outpu: Energie_raquette (pour n tests)
+    print ("Energie_balle_cplt = ", Energie_balle_cplt)
 #    testAcc= 1;     # Ajouté par Pierrick
 #    # testAcc=input('faire l''analyse sur l''accéléro ? 1=oui (0=non) ===> '); # pour pas faire automatiquement
 #    # l'analyse sur l'accéléromètre (ex s'il est pas branché...)

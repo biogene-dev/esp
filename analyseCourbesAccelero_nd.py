@@ -27,50 +27,58 @@ import numpy as np
 
 a = np.array([])
 t = np.array([])
-data_folder = Path("source_data/text_files/")
-p = Path('.')
-print (p.absolute())
-file_to_open = p.absolute() / "impact_nd.txt"
+#data_folder = Path("source_data/text_files/")
+#p = Path('.')
+#print (p.absolute())
+#file_to_open = p.absolute() / "impact_nd.txt"
+#
+### ========================================================================
+## cherche le nombre de tests et les intervales d'intérêt
+## =========================================================================
+#
+##t = mesureBalle[][0]*1e-6 # en secondes
+#
+#print ("opening file")
+#print(file_to_open)
+#f= open(file_to_open,"r")
+#(f.read(1000)) 
+#val = 0.0 
+#print ("Formatage des datas")
+#rating = 0
+#for line in f:
+#    rating +=1
+#    if line :
+#        try :
+##            print (line)
+#            to_test =line.split(',')
+#            val = float(to_test[4])
+##            print ("val =",val)
+#        except :
+#            pass
+#            print("bad")
+##            print (line)
+#        else :
+##            print ("good" , val)
+#            # ----------------------------
+#            # conversion binaire, valeur reelle
+#    
+#            # fonction de transformation bit -> degre
+#            if len(to_test) == 6 :
+#                transAng=(val); # le 0.8 est du à la bande de 10# -> 90# du capteur
+##            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
+#                if transAng < 10000 : a =np.append(a, transAng)
+#                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
+#
+##            print (len(a))
+global temps
+global raquette
+global balle
+global accelero
 
-## ========================================================================
-# cherche le nombre de tests et les intervales d'intérêt
-# =========================================================================
-
-#t = mesureBalle[][0]*1e-6 # en secondes
-
-print ("opening file")
-print(file_to_open)
-f= open(file_to_open,"r")
-(f.read(1000)) 
-val = 0.0 
-print ("Formatage des datas")
-rating = 0
-for line in f:
-    rating +=1
-    if line :
-        try :
-#            print (line)
-            to_test =line.split(',')
-            val = float(to_test[4])
-#            print ("val =",val)
-        except :
-            pass
-            print("bad")
-#            print (line)
-        else :
-#            print ("good" , val)
-            # ----------------------------
-            # conversion binaire, valeur reelle
-    
-            # fonction de transformation bit -> degre
-            if len(to_test) == 6 :
-                transAng=(val); # le 0.8 est du à la bande de 10# -> 90# du capteur
-#            transAng=(val*360/((2^13)*0.8)); # le 0.8 est du à la bande de 10# -> 90# du capteur
-                if transAng < 10000 : a =np.append(a, transAng)
-                if int(to_test[0])< 9999999999 : t= np.append(t ,  (float(to_test[0])/1000000) ) 
-
-#            print (len(a))
-                
+a = accelero
+t = temps/1000
+print ("len de rec =" , len(a))
+print (a)
 mesureAcc=(a*100/8192)*1.66;
 
 
@@ -173,7 +181,7 @@ for i in range (len(indexes)):
     nfft = np.arange(start=0.0,stop=4,step=1.0/fe)
     
     echantillons = acc[indexes[i]-100:indexes[i]+200]
-    tfd = fftn(echantillons)
+    tfd = fft(echantillons)
     N=len(echantillons)
     spectre = np.absolute(tfd)*2/N
     

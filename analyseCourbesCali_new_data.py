@@ -18,7 +18,7 @@ import numpy as np
 from tkinter import filedialog
 from tkinter import *
 import tkinter
-from Main import *
+#from Main import *
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -40,7 +40,7 @@ def plot_simple (to_plot):
 # si calibrage raquette, demande autres informations
 
 print ("=========calibration=======")
-typeTest =1
+global typeTest
 if typeTest==2 :
     print('*******************************************************')
     mRaquette=input('Masse de la raquette ? (en g) ==> ') 
@@ -55,7 +55,7 @@ Temps=[]
 data_folder = Path("source_data/text_files/")
 p = Path('.')
 print (p.absolute())
-file_to_open = p.absolute() / "calib_bal_p.txt"
+file_to_open = p.absolute() / "calib.txt"
 
 print ("opening file")
 print(file_to_open)
@@ -70,7 +70,7 @@ for line in f:
         try :
 #            print (line)
             to_test =line.split(',')
-            val = float(to_test[3])
+            val = float(to_test[2])
 #            print ("val =",val)
         except :
             pass
@@ -89,18 +89,25 @@ for line in f:
                 if int(to_test[0])< 9999999999 : Temps.append(int(int(to_test[0])/1000))
 
 #            print (len(a))
+#global temps
+#global raquette
+#global balle
+#global accelero
         
 print ("len de rec =" , len(a))
 print (a)
-
+ang = np.radians(a)
+#Temps = ((temps))
 ## ========================================================================
 # cherche le nombre de tests et les intervales intéressants
 # =========================================================================
 #t=mesures(:,1)*1e-6 # temps en s
 print ("=====passage au radioans")
-
-ang=np.radians(a); # angle en radian
-
+#if typeTest==2 :
+#    ang=np.radians(raquette); # angle en radian
+#else : 
+#    ang=np.radians(balle); # angle en radian
+    
 # fait la moyenne des n premieres valeurs pour trouver celle au repos
 #ang0=mean(ang(t<(tpsRepos),1));
 ang0 = (np.mean(ang[0:1000]))
@@ -113,7 +120,7 @@ ang = np.subtract(ang, ang0)
 #ind=[1;ind]; # rajoute l'indice 0 en début
 plot_simple(ang)
 from detect_peaks import detect_peaks
-indexes = detect_peaks(ang, mph=0.25 , mpd=1000)
+indexes = detect_peaks(ang, mph=0.15 , mpd=1000)
 
 """ ancienne solution
 import peakutils
@@ -411,6 +418,7 @@ for i in range (nbTests):
         cmax = [mL, 0.02, 0.6,   0.01,  3.5]
     if typeTest == 2 :
         mLinit=float(mRaquette)*1e-3*(float(posCdGRaquette)*1e-3+float(posRaquette))+float(mBras)*float(posCdGBras); # mL est imposé
+        print ("mlinit calcule", mLinit)
         mL = mLinit 
         mL = 0.74
         kvlinit = 0.035
@@ -439,7 +447,7 @@ for i in range (nbTests):
 #    vit0init = vit0init * 10000
     print ("calcule vit0=", ang_test[10] , ang_test[1], t_test[10]/1000,t_test[1]/1000)
     
-#    vit0init = 1.96
+    vit0init = 3.05
 
     print ("vit0)init  = ", vit0init)  
 #--------------------------------
